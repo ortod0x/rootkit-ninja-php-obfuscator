@@ -12,6 +12,8 @@ composer install
 ## Usage:
 ```
 ./rootkitninja --output output.php --key key1234 --shebang '/usr/bin/env php' input.php
+or
+./rootkitninja --output output.php input.php
 ```
 
 ## Features:
