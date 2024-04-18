@@ -1,0 +1,246 @@
+#!/usr/bin/env php
+<?php
+
+require __DIR__."/src/autoload.php";
+
+use RootkitNinjaObfuscator\RootkitNinjaObfuscator;
+
+$template = "
+__________               __   __   .__  __      _______  .__            __        
+\______   \ ____   _____/  |_|  | _|__|/  |_    \      \ |__| ____     |__|____   
+ |       _//  _ \ /  _ \   __\  |/ /  \   __\   /   |   \|  |/    \    |  \__  \  
+ |    |   (  <_> |  <_> )  | |    <|  ||  |    /    |    \  |   |  \   |  |/ __ \_
+ |____|_  /\____/ \____/|__| |__|_ \__||__| /\ \____|__  /__|___|  /\__|  (____  /
+        \/                        \/        \/         \/        \/\______|    \/ 
+							   [UnHumanize PHP Obfuscator]
+					[Silent Like a Ninja - Stealth Like a Rootkit]
+
+";
+
+$appName = $_SERVER["argv"][0];
+
+if ($argc === 1) {
+	usage();
+}
+
+array_shift($_SERVER["argv"]);
+
+$tmpDir = "/tmp";
+$outputFile = "a.out";
+$inputFile = null;
+$sheBang = null;
+$key = "r00tk1tn1nj4";
+
+$inv = $hasInputFile = $cq = $skip = false;
+foreach ($_SERVER["argv"] as $k => $v) {
+
+	if ($skip) {
+		$skip = false;
+		continue;
+	}
+
+	if ($v[0] === '-') {
+		$l = strlen($v);
+		if ($l === 2) {
+			if ($v[1] === "-") {
+				goto invalid_parameter;
+			} else {
+				parseOpt1();
+			}
+		} else if ($v[1] === "-") {
+			parseOpt2();
+		} else {
+			$cq = true;
+			parseOpt1();
+		}
+	} else {
+		if ($hasInputFile) {
+			goto double_input_file;
+			exit(1);
+		}
+		$inputFile = $v;
+		$hasInputFile = true;
+	}
+
+
+	if ($inv) {
+		goto invalid_parameter;
+	}
+}
+
+if (!is_string($inputFile)) {
+	goto input_file_required;
+}
+
+define("TMP_DIR", "/tmp");
+try {
+	if ($key === "") {
+		printf("Error: Key cannot be empty!\n");
+		exit(1);
+	}
+	$inputFile = realpath($oldInputFile = $inputFile);
+	if ((!$inputFile)) {
+		$inputFile = $oldInputFile;
+	}
+	unset($oldInputFile);
+
+	printf("Initializing obfuscator...\n");
+	printf("===============================================\n");
+	printf("Input file\t: %s\n", $inputFile);
+	$st = new RootkitNinjaObfuscator($inputFile, $outputFile);
+	printf("Output file\t: %s\n", $outputFile);
+	printf("File Key\t: %s\n", $key);
+	if (is_string($sheBang)) {
+		$st->setShebang($sheBang);
+		printf("Shebang\t\t: %s\n", $sheBang);
+	} else {
+		printf("Shebang\t\t: %s\n", "(no shebang)");
+	}
+	printf("===============================================\n");
+	$st->setKey($key);
+	$st->execute();
+	printf("Obfuscation finished!\n");
+	printf("md5sum\t: %s (%s)\n", $outputFile, md5_file($outputFile));
+	printf("sha1sum\t: %s (%s)\n", $outputFile, sha1_file($outputFile));
+} catch (Exception $e) {
+	printf("\n\nAn error occured: %s\n", $e->getMessage());
+	exit(1);
+}
+
+exit(0);
+
+
+function parseOpt1(): void
+{
+	global $k, $v, $key, $cq, $inv, $skip, $sheBang, $tmpDir, $inputFile, $outputFile;
+
+	if ($v === "-o") {
+		if ($cq) {
+			$outputFile = substr($v, 2);
+			$cq = false;
+			return;
+		} else if (!isset($_SERVER["argv"][$k + 1])) {
+			printf("Error: -o option required a value\n");
+			exit(1);
+		} else {
+			$outputFile = $_SERVER["argv"][$k + 1];
+			$skip = true;
+			return;
+		}
+	}
+
+	if ($v === "-s") {
+		if ($cq) {
+			$sheBang = substr($v, 2);
+			$cq = false;
+			return;
+		} else if (!isset($_SERVER["argv"][$k + 1])) {
+			printf("Error: -s option required a value\n");
+			exit(1);
+		} else {
+			$sheBang = $_SERVER["argv"][$k + 1];
+			$skip = true;
+			return;
+		}
+	}
+
+	if ($v === "-k") {
+		if ($cq) {
+			$key = substr($v, 2);
+			$cq = false;
+			return;
+		} else if (!isset($_SERVER["argv"][$k + 1])) {
+			printf("Error: -k option required a value\n");
+			exit(1);
+		} else {
+			$key = $_SERVER["argv"][$k + 1];
+			$skip = true;
+			return;
+		}
+	}
+
+	if ($v === "-h") {
+		usage();
+	}
+
+	$v = substr($v, 0, 2);
+	$inv = true;
+}
+
+function parseOpt2(): void
+{
+	global $k, $v, $key, $cq, $inv, $skip, $sheBang, $tmpDir, $inputFile, $outputFile;
+
+	if ($v === "--output") {
+		if (!isset($_SERVER["argv"][$k + 1])) {
+			printf("Error: -o option required a value\n");
+			exit(1);
+		} else {
+			$outputFile = $_SERVER["argv"][$k + 1];
+			$skip = true;
+			return;
+		}
+	}
+
+	if ($v === "--shebang") {
+		if (!isset($_SERVER["argv"][$k + 1])) {
+			printf("Error: -s option required a value\n");
+			exit(1);
+		} else {
+			$sheBang = $_SERVER["argv"][$k + 1];
+			$skip = true;
+			return;
+		}
+	}
+
+	if ($v === "--key") {
+		if (!isset($_SERVER["argv"][$k + 1])) {
+			printf("Error: -k option required a value\n");
+			exit(1);
+		} else {
+			$key = $_SERVER["argv"][$k + 1];
+			$skip = true;
+			return;
+		}
+	}
+
+	if ($v === "--help") {
+		usage();
+	}
+
+	$inv = true;
+}
+
+function usage(): void
+{
+	global $appName;
+	global $template;
+	printf($template);
+	printf("Usage: %s [option] <file>\n\n", $appName);
+	printf("\t-k <key>\t\tGive a key to encrypt the input file (default: r00tk1tn1nj4).\n");
+	printf("\t--key <key>\t\tGive a key to encrypt the input file (default: r00tk1tn1nj4).\n");
+	printf("\t-o <file>\t\tSave obfuscated PHP code to <file> (default: a.out).\n");
+	printf("\t--output <file>\t\tSave obfuscated PHP code to <file> (default: a.out).\n");
+	printf("\t-s <shebang>\t\tAdd a shebang into obfuscated PHP file (default: (no shebang)).\n");
+	printf("\t--shebang <shebang>\tAdd a shebang into obfuscated PHP file (default: (no shebang)).\n");
+	printf("\t-h\t\t\tShow this message.\n");
+	printf("\t--help\t\t\tShow this message.\n");
+	printf("\n\n");
+	printf("Example usage:\n");
+	printf("\t%s --output output.php --key mypassword123 --shebang '/usr/bin/env php' input.php\n", $appName);
+	exit(0);
+}
+
+// Errors
+
+invalid_parameter:
+	printf("Error: Invalid parameter \"%s\"\n", $v);
+	exit(1);
+
+input_file_required:
+	printf("Error: Input file required!\n");
+	exit(1);
+
+double_input_file:
+	print("Error: Compiling multiple file is not supported!\n");
+	exit(1);

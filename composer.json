@@ -1,0 +1,21 @@
+{
+    "name": "ortod0x/rootkit-ninja-php-obfuscator",
+    "description": "Rootkit Ninja PHP Obfuscator",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ortod0x",
+            "email": "akari@rootkit.ninja"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "nikic/php-parser": "^4.2.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "RootkitNinjaObfuscator\\": "src/classes/RootkitNinjaObfuscator/"
+        }
+    }
+}
